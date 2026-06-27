@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "module": "nodenext",          // 🔥 加上这一行，解决报错
     "moduleResolution": "nodenext",
     "target": "ES2021",
     "checkJs": true,
