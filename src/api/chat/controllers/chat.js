@@ -1,5 +1,4 @@
-const { OpenRouter } = require("@openrouter/sdk"); // 如果是 CommonJS 规范 (根据你项目实际支持的语法)
-// 或者如果你的项目完全支持打包/ESM，用：import { OpenRouter } from "@openrouter/sdk";
+const { OpenRouter } = require("@openrouter/sdk");
 
 module.exports = {
   async handleChat(ctx) {
@@ -14,11 +13,16 @@ module.exports = {
         apiKey: process.env.OPENROUTER_API_KEY || "<YOUR_FALLBACK_KEY>"
       });
 
-      // 🔥 关键修改：将参数包裹在 chatRequest 对象中
       const stream = await openrouter.chat.send({
         chatRequest: {
           model: process.env.AI_MODEL || "cohere/north-mini-code:free",
+          
+          // 👇 就是这里：增加了 system 提示词来控制 AI 的语言和字数
           messages: [
+            {
+              role: "system",
+              content: "你是一个 AI 助手，中文回答，回答要简洁明了。"
+            },
             {
               role: "user",
               content: message
@@ -35,13 +39,12 @@ module.exports = {
           fullResponse += content;
         }
 
-if (chunk.usage) {
-  // 1. 先尝试获取原生下划线字段，再尝试驼峰字段
-  const reasoning = chunk.usage['reasoning_tokens'] || chunk.usage['reasoningTokens'];
-  if (reasoning) {
-    console.log("\n[OpenRouter] 消耗 Reasoning tokens:", reasoning);
-  }
-}
+        if (chunk.usage) {
+          const reasoning = chunk.usage['reasoning_tokens'] || chunk.usage['reasoningTokens'];
+          if (reasoning) {
+            console.log("\n[OpenRouter] 消耗 Reasoning tokens:", reasoning);
+          }
+        }
       }
 
       return { reply: fullResponse };
